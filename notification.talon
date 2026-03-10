@@ -17,6 +17,8 @@ os: mac
 ^(note | notification) {user.notification_apps} {user.notification_actions}$:
     user.notification_app_action(notification_apps, notification_actions)
 
+^(note | notification) close all$: user.notifications_close_all()
+
 ^(note | notification) update$: user.notifications_update()
 
 ^(note | notification) center$:

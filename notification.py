@@ -54,6 +54,9 @@ class Actions:
     def notification_show_actions(index: int):
         """Display actions available on the notification at the specified index, or hide list if index is -1"""
 
+    def notifications_close_all():
+        """Close all visible notifications"""
+
     def notifications_update():
         """Update notification list to reflect what is currently onscreen"""
         # (poll? not try to keep up? not sure what else to do)
@@ -164,6 +167,9 @@ class UserActions:
     def notification_app_action(app_name: str, action: str) -> bool:
         return MONITOR.perform_action(action, app_name=app_name)
 
+    def notifications_close_all():
+        MONITOR.close_all()
+
     def notification_show_actions(index: int):
         MONITOR.show_actions(index)
 
@@ -235,6 +241,25 @@ class NotificationMonitor:
             return None
 
         return self.notifications[index]
+
+    def close_all(self):
+        self.update_notifications()
+
+        for identifier, group in list(self.notification_groups()):
+            notification = None
+            for n in self.notifications:
+                if n.identifier == identifier:
+                    notification = n
+                    break
+            if notification is None:
+                continue
+
+            if "close" in notification.actions:
+                group.perform(notification.actions["close"])
+            elif "clear all" in notification.actions:
+                group.perform(notification.actions["clear all"])
+
+        cron.after("500ms", self.update_notifications)
 
     def perform_action(
         self, action: str, index: Optional[int] = None, app_name: str = None
